@@ -193,3 +193,28 @@ If you find our work useful, please consider citing:
 	year={2024}
 }
 ```
+
+# CS231N Final Project
+## Step 1: Generate Demonstrations
+```bash
+bash scripts/gen_demonstration_metaworld.sh bin-picking 
+```
+
+## Step 2: Train the Policy
+```bash
+bash scripts/train_policy.sh dp3 metaworld_bin-picking 0521 0 0
+```
+Aproximately 2 hours.
+
+## Step 3: Evaluate the Policy
+```bash
+bash scripts/eval_policy.sh dp3 metaworld_bin-picking 0521 0 0
+```
+If train 10 demo, 300 epochs (default)
+Training success rate = 0.55
+Evaluation success rate = 0.45
+  mean_traj_rewards: 2976.6751
+  mean_success_rates: 0.4500
+  test_mean_score: 0.4500
+  SR_test_L3: 0.4500
+  SR_test_L5: 0.4500
