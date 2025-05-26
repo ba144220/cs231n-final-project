@@ -31,6 +31,7 @@ from diffusion_policy_3d.common.checkpoint_util import TopKCheckpointManager
 from diffusion_policy_3d.common.pytorch_util import dict_apply, optimizer_to
 from diffusion_policy_3d.model.diffusion.ema_model import EMAModel
 from diffusion_policy_3d.model.common.lr_scheduler import get_scheduler
+from diffusion_policy_3d.common.model_util import print_params
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
@@ -67,6 +68,9 @@ class TrainDP3Workspace:
         # configure training state
         self.global_step = 0
         self.epoch = 0
+        
+        # print model parameters
+        print_params(self.model)
 
     def run(self):
         cfg = copy.deepcopy(self.cfg)
@@ -374,7 +378,8 @@ class TrainDP3Workspace:
     def save_checkpoint(self, path=None, tag='latest', 
             exclude_keys=None,
             include_keys=None,
-            use_thread=False):
+            use_thread=False
+        ):
         if path is None:
             path = pathlib.Path(self.output_dir).joinpath('checkpoints', f'{tag}.ckpt')
         else:
@@ -385,6 +390,7 @@ class TrainDP3Workspace:
             include_keys = tuple(self.include_keys) + ('_output_dir',)
 
         path.parent.mkdir(parents=False, exist_ok=True)
+        
         payload = {
             'cfg': self.cfg,
             'state_dicts': dict(),
@@ -401,6 +407,8 @@ class TrainDP3Workspace:
                         payload['state_dicts'][key] = value.state_dict()
             elif key in include_keys:
                 payload['pickles'][key] = dill.dumps(value)
+                
+                
         if use_thread:
             self._saving_thread = threading.Thread(
                 target=lambda : torch.save(payload, path.open('wb'), pickle_module=dill))

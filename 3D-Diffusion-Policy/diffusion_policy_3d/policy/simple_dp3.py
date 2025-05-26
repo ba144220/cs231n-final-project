@@ -15,7 +15,6 @@ from diffusion_policy_3d.policy.base_policy import BasePolicy
 from diffusion_policy_3d.model.diffusion.simple_conditional_unet1d import ConditionalUnet1D
 from diffusion_policy_3d.model.diffusion.mask_generator import LowdimMaskGenerator
 from diffusion_policy_3d.common.pytorch_util import dict_apply
-from diffusion_policy_3d.common.model_util import print_params
 from diffusion_policy_3d.model.vision.pointnet_extractor import DP3Encoder
 
 class SimpleDP3(BasePolicy):
@@ -126,9 +125,6 @@ class SimpleDP3(BasePolicy):
         if num_inference_steps is None:
             num_inference_steps = noise_scheduler.config.num_train_timesteps
         self.num_inference_steps = num_inference_steps
-
-
-        print_params(self)
         
     # ========= inference  ============
     def conditional_sample(self, 
