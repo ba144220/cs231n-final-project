@@ -255,4 +255,9 @@ Short_simple_dp3 Test results:
 - SR_test_L5: 0.8500
 
 Short_dp3 Test results:
-Not trained yet.
+---------------- Eval Results --------------
+mean_n_goal_achieved: 21.1000
+mean_success_rates: 0.8500
+test_mean_score: 0.8500
+SR_test_L3: 0.8500
+SR_test_L5: 0.8500
