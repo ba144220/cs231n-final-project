@@ -108,7 +108,7 @@ training:
   gradient_accumulate_every: 1
   use_ema: True
   rollout_every: 10
-  checkpoint_every: 100
+  checkpoint_every: 30
   val_every: 1
   sample_every: 5
   max_train_steps: null
