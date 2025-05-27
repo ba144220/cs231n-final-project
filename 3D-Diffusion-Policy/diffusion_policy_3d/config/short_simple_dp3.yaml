@@ -119,6 +119,8 @@ training:
   max_train_steps: null
   max_val_steps: null
   tqdm_interval_sec: 1.0
+  pretrained_extractor_path: "/work/yuchi/stanford/spring-2025/cs231n/cs231n-final-project/3D-Diffusion-Policy/data/outputs/metaworld_box-close-short_simple_dp3-0521_seed0.original/checkpoints/extractor_latest.ckpt"
+  freeze_extractor: false
 
 logging:
   group: ${exp_name}

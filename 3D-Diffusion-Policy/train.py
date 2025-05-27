@@ -31,7 +31,7 @@ from diffusion_policy_3d.common.checkpoint_util import TopKCheckpointManager
 from diffusion_policy_3d.common.pytorch_util import dict_apply, optimizer_to
 from diffusion_policy_3d.model.diffusion.ema_model import EMAModel
 from diffusion_policy_3d.model.common.lr_scheduler import get_scheduler
-from diffusion_policy_3d.common.model_util import print_params
+from diffusion_policy_3d.common.model_util import print_params, save_submodule, load_submodule, freeze_submodule
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
@@ -99,6 +99,27 @@ class TrainDP3Workspace:
             if lastest_ckpt_path.is_file():
                 print(f"Resuming from checkpoint {lastest_ckpt_path}")
                 self.load_checkpoint(path=lastest_ckpt_path)
+        
+        # Load pretrained extractor if specified in config
+        if hasattr(cfg.training, 'pretrained_extractor_path') and cfg.training.pretrained_extractor_path is not None:
+            pretrained_extractor_path = pathlib.Path(cfg.training.pretrained_extractor_path)
+            if pretrained_extractor_path.exists():
+                cprint(f"Loading pretrained extractor from {pretrained_extractor_path}", 'yellow')
+                load_submodule(self.model.obs_encoder.extractor, pretrained_extractor_path)
+                if self.ema_model is not None:
+                    load_submodule(self.ema_model.obs_encoder.extractor, pretrained_extractor_path)
+            else:
+                cprint(f"Warning: Pretrained extractor path {pretrained_extractor_path} does not exist, skipping...", 'red')
+        
+        # Freeze the extractor if specified in config
+        if hasattr(cfg.training, 'freeze_extractor') and cfg.training.freeze_extractor:
+            cprint("Freezing extractor parameters", 'yellow')
+            freeze_submodule(self.model.obs_encoder.extractor)
+            if self.ema_model is not None:
+                freeze_submodule(self.ema_model.obs_encoder.extractor)
+        
+        print_params(self.model)
+        print_params(self.ema_model)
 
         # configure dataset
         dataset: BaseDataset
@@ -388,6 +409,8 @@ class TrainDP3Workspace:
             exclude_keys = tuple(self.exclude_keys)
         if include_keys is None:
             include_keys = tuple(self.include_keys) + ('_output_dir',)
+            
+        cprint(f'Saving checkpoint to {path}', 'yellow')
 
         path.parent.mkdir(parents=False, exist_ok=True)
         
@@ -416,8 +439,13 @@ class TrainDP3Workspace:
         else:
             torch.save(payload, path.open('wb'), pickle_module=dill)
         
+        save_submodule(self.ema_model.obs_encoder.extractor, path.parent.joinpath(f'extractor_latest.ckpt'))
+        
         del payload
         torch.cuda.empty_cache()
+        
+        cprint(f'Checkpoint saved to {path}', 'green')
+        
         return str(path.absolute())
     
     def get_checkpoint_path(self, tag='latest'):
